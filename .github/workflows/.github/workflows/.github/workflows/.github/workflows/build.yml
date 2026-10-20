@@ -1,0 +1,45 @@
+
+name: Bildirim Gecmisi APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'BildirimGecmisi_Android_Proje.zip'
+      - '.github/workflows/build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+
+      - name: Java kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Gradle kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Projeyi aç
+        run: |
+          unzip -q BildirimGecmisi_Android_Proje.zip -d extracted
+          echo "PROJECT_DIR=$GITHUB_WORKSPACE/extracted" >> "$GITHUB_ENV"
+
+      - name: APK derle
+        run: |
+          cd "$PROJECT_DIR"
+          gradle assembleDebug
+
+      - name: APK dosyasını yayınla
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bildirim-Gecmisi-APK
+          path: extracted/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          
